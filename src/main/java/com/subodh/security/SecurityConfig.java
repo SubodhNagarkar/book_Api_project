@@ -12,7 +12,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -20,19 +19,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
-	private jwtFilter jwtAuthFilter;
-	private final AuthenticationProvider authenticationProvider;
-	@Bean
-	public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
-		http.cors(Customizer.withDefaults())
-		.csrf(AbstractHttpConfigurer::disable)
-		.authorizeHttpRequests(req -> req.requestMatchers("")
-				.permitAll()
-				.anyRequest()
-				.authenticated())
-		.sessionManagement(session -> SessionCreationPolicy(SessionCreationPolicy.STATELESS))
-		.authenticationProvider(authenticationProvider)
-		.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-		;
-	}
+
+    private  jwtFilter jwtAuthFilter;
+    private final AuthenticationProvider authenticationProvider;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.cors(Customizer.withDefaults())
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(req -> req
+                .requestMatchers("/public/**") // Specify the patterns you want to permit without authentication
+                .permitAll()
+                .anyRequest()
+                .authenticated())
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
 }
